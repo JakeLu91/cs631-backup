@@ -96,10 +96,11 @@ address_of_return3: .word return3
 main:
 	ldr r1, address_of_return
 	str lr, [r1]
-
+	
+	/*printf("isort\nn: ");*/
 	ldr r0, address_of_message1
 	bl printf
-
+	/*scanf("%d", &n)*/
 	ldr r0, address_of_scan_pattern
 	ldr r1, address_of_size
 	bl scanf
@@ -107,23 +108,25 @@ main:
 	b check_array_loop
 
 /*initialize array here*/
-array_loop: 
+array_loop:
+	/*printf("%d: ", i);*/ 
 	ldr r0, address_of_message2
 	ldr r1, address_of_i
 	ldr r1, [r1]
 	bl printf
-
+	/*scanf("%d", &a[i - 1])*/
 	ldr r0, address_of_scan_pattern
 	add sp, sp, #-4
 	mov r1, sp
 	bl scanf
-
+	/*i++;*/
 	ldr r1, address_of_i
 	ldr r2, [r1]
 	add r2, r2, #1
 	str r2, [r1]
 
 check_array_loop:
+	/*if i <= size/n then continue*/
 	ldr r0, address_of_size
 	ldr r0, [r0]
 
