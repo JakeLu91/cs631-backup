@@ -25,6 +25,9 @@ j: .word 0
 cur: .word 0
 
 .balign 4
+temp_int: .word 0
+
+.balign 4
 return: .word 0
 
 .balign 4
@@ -148,63 +151,58 @@ check_loop1:
 	bge reset_i_0
 	
 /*loop1 */
-sort_loop1:
-	
+sort_loop1:	
 	/* cur = a[i]  */
 	ldr r0, address_of_i
 	ldr r0, [r0]
 	bl get_address_of_a_n  /* address of a[i] is now in r0 */
-	/*logging*/
-        bl test_log
 	ldr r0, [r0]
 	
 	ldr r1, address_of_cur
 	str r0, [r1]		
 
-/*check for loop2*/
-check_loop2:
 	/*j = i - 1*/
          ldr r0, address_of_i
          ldr r0, [r0]
          sub r0, r0, #1
          ldr r1, address_of_j
          str r0, [r1]
-         ldr r1, [r1]
-         /* if j < 0 then break */
-         cmp r1, #0
-         blt sort_loop1_continue
-         /* if a[j] <= cur then  break */
-         ldr r0, address_of_j
-         ldr r0, [r0]
-         bl get_address_of_a_n
-         ldr r0, [r0]
-         ldr r1, address_of_cur
-         ldr r1, [r1]
-         cmp r0, r1
-         ble sort_loop1_continue
+	
+
+/*check for loop2*/
+check_loop2:
+	/* if j < 0 then break */
+ 	ldr r0, address_of_j
+	ldr r0, [r0]        
+        cmp r0, #0
+        blt sort_loop1_continue
+        /* if a[j] <= cur then  break */
+        ldr r0, address_of_j
+        ldr r0, [r0]
+        bl get_address_of_a_n
+        ldr r0, [r0]
+        ldr r1, address_of_cur
+        ldr r1, [r1]
+        cmp r0, r1
+        ble sort_loop1_continue
 
 /*loop2 inside loop1*/
 sort_loop2:
-	/* if a[j] <= cur then  break */
-	ldr r0, address_of_j
-	ldr r0, [r0]
-	bl get_address_of_a_n
-	ldr r0, [r0]
-	ldr r1, address_of_cur
-	ldr r1, [r1]
-	cmp r0, r1
-	ble sort_loop1_continue
 	/* a[j + 1] = a[j] */
 	ldr r0, address_of_j
 	ldr r0, [r0]
-	add r0, r0, #1
 	bl get_address_of_a_n
-	mov r1, r0 /*move the address of a[j + 1] from r0 to r1*/
+	ldr r0, [r0]
+	ldr r1, address_of_temp_int
+        str r0, [r1]            /*store value of a[j] to a temp int variable*/ 
 	ldr r0, address_of_j
-	ldr r0, [r0]
-	bl get_address_of_a_n
-	ldr r0, [r0]
-	str r0, [r1]	
+        ldr r0, [r0]
+        add r0, r0, #1
+        bl get_address_of_a_n	/*address of a[j + 1] should be now in r0*/
+	ldr r1, address_of_temp_int
+	ldr r1, [r1]
+	str r1, [r0]
+
 	/* j--  */
 	ldr r0, address_of_j
 	ldr r1, [r0]
@@ -278,7 +276,7 @@ address_of_i: .word i
 address_of_j: .word j
 address_of_cur: .word cur
 address_of_return: .word return
-
+address_of_temp_int: .word temp_int
 .global printf
 .global scanf
 
