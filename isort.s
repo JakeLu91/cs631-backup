@@ -12,8 +12,6 @@ message3: .asciz "%d\n"
 .balign 4
 scan_pattern: .asciz "%d"
 
-
-
 .balign 4
 size: .word 0 
 
@@ -35,7 +33,27 @@ return2: .word 0
 .balign 4
 return3: .word 0
 
+.balign 4
+test_return: .word 0
+
+.balign 4
+test_message: .asciz "\nTESTING\n"
+
 .text
+
+test_log:
+	ldr r1, address_of_test_return
+        str lr, [r1]
+	
+	ldr r0, address_of_test_message
+	bl printf
+
+        ldr lr, address_of_test_return
+        ldr lr, [lr]
+        bx lr
+address_of_test_message: .word test_message
+address_of_test_return: .word test_return
+
 reset_i:
 	ldr r1, address_of_return2
 	str lr, [r1]
@@ -62,7 +80,8 @@ get_address_of_a_n:
 	sub r2, r1, r0
 	mov r3, #4
 	mul r2, r3, r2
-	ldr r0, [sp, +r2]	
+	
+	add r0, sp, r2	
 
         ldr lr, address_of_return3
         ldr lr, [lr]
@@ -119,6 +138,7 @@ reset_i_1:
 
 /*check for loop1*/
 check_loop1:
+
 	/* check if i < n  */
 	ldr r0, address_of_size
 	ldr r0, [r0]
@@ -129,11 +149,15 @@ check_loop1:
 	
 /*loop1 */
 sort_loop1:
+	
 	/* cur = a[i]  */
 	ldr r0, address_of_i
 	ldr r0, [r0]
 	bl get_address_of_a_n  /* address of a[i] is now in r0 */
+	/*logging*/
+        bl test_log
 	ldr r0, [r0]
+	
 	ldr r1, address_of_cur
 	str r0, [r1]		
 
