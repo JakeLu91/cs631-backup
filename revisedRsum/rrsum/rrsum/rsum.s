@@ -42,11 +42,44 @@ return3: .word 0
 
 .text
 
+get_address_of_a_n:
+        ldr r1, address_of_return3
+    str lr, [r1]
 
+        /*because array index are 0-based*/
+        add r0, r0, #1
+
+        mov r3, #4
+        mul r2, r3, r0
+
+    ldr r0, address_of_start_of_stack
+    ldr r0, [r0]
+
+
+    sub r0, r0, r2
+
+    ldr lr, address_of_return3
+    ldr lr, [lr]
+    bx lr
+
+log:
+	ldr r1, address_of_return_of_test
+        str lr, [r1]
+	
+	ldr r0, address_of_test_log
+	bl printf
+	
+        ldr lr, address_of_return_of_test
+        ldr lr, [lr]
+        bx lr
 sum:
 	str lr, [sp, #-4]!
 	cmp r0, #0
 	bgt is_nonzero
+	bl get_address_of_a_n
+	mov r2, r0
+	ldr r2, [r2]
+	add r3, r3, r2	
 	b end
 
 is_nonzero:
@@ -54,14 +87,10 @@ is_nonzero:
     str r0, [r1]
 
     bl get_address_of_a_n
+    mov r2, r0
+    ldr r2, [r2]
 
-    ldr r0, [r0]
-
-    ldr r1, address_of_total
-    ldr r2, [r1]
-
-    add r2, r0, r2
-    str r2, [r1]
+    add r3, r3, r2
 
     ldr r0, address_of_tmp
     ldr r0, [r0]
@@ -74,28 +103,8 @@ end:
 
 
 
-get_address_of_a_n:
-	ldr r1, address_of_return3
-    str lr, [r1]
-	
-	ldr r1, address_of_size
-	ldr r1, [r1]
 
-	/*because array index are 0-based*/
-	add r0, r0, #1
 
-	sub r2, r1, r0
-	mov r3, #4
-	mul r2, r3, r2
-
-    ldr r0, address_of_start_of_stack
-    ldr r0, [r0]
-
-    sub r0, r0, r2
-
-    ldr lr, address_of_return3
-    ldr lr, [lr]
-    bx lr
 
 .global main
 
@@ -122,13 +131,13 @@ array_loop:
 	ldr r1, address_of_i
 	ldr r1, [r1]
     add r1, r1, #1
-
 	bl printf
 	/*scanf("%d", &a[i])*/
 	ldr r0, address_of_scan_pattern
 	add sp, sp, #-4
 	mov r1, sp
 	bl scanf
+	
 	/*i++;*/
 	ldr r1, address_of_i
 	ldr r2, [r1]
@@ -147,20 +156,22 @@ check_array_loop:
 	bne array_loop
 
 print_result:
+
     /*reset i ＝ i － 1*/
     ldr r1, address_of_i
     ldr r0, [r1]
     add r0, r0, #-1
     str r0, [r1]
-
+    
+    /*use r3 to store return value*/
+    mov r3, #0
     bl sum
 
-    ldr r1, address_of_total
-    ldr r1, [r1]
     ldr r0, address_of_message3
+    mov r1, r3
     bl printf
 
-end:
+end_of_main:
 	ldr r0, address_of_return
 	ldr lr, [r0]
 	bx lr
