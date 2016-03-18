@@ -15,15 +15,14 @@ scan_pattern: .asciz "%d"
 .balign
 test_log: .asciz "\nTesting\n"
 
-/*It's the number user just input*/
 .balign
 i: .word 0
 
 .balign
-count: .word 0
+size: .word 0
 
 .balign
-size: .word 0
+start_of_stack: .word 0
 
 .balign
 total: .word 0
@@ -39,38 +38,64 @@ return_of_test: .word 0
 return: .word 0
 
 .balign
-return1: .word 0
-
-.balign
-return2: .word 0
-
-.balign
 return3: .word 0
 
 .text
+
+
+sum:
+	str lr, [sp, #-4]!
+	cmp r0, #0
+	bgt is_nonzero
+	b end
+
+is_nonzero:
+    ldr r1, address_of_tmp
+    str r0, [r1]
+
+    bl get_address_of_a_n
+
+    ldr r0, [r0]
+
+    ldr r1, address_of_total
+    ldr r2, [r1]
+
+    add r2, r0, r2
+    str r2, [r1]
+
+    ldr r0, address_of_tmp
+    ldr r0, [r0]
+    sub r0, r0, #1
+    bl sum
+end:
+	add sp, sp, #+4 
+	ldr lr, [sp]
+	bx lr
+
+
+
 get_address_of_a_n:
 	ldr r1, address_of_return3
-        str lr, [r1]
+    str lr, [r1]
 	
 	ldr r1, address_of_size
 	ldr r1, [r1]
 
 	/*because array index are 0-based*/
 	add r0, r0, #1
-	
+
 	sub r2, r1, r0
 	mov r3, #4
 	mul r2, r3, r2
-	
-	add r0, sp, r2	
 
-        ldr lr, address_of_return3
-        ldr lr, [lr]
-        bx lr
-address_of_return3: .word return3
+    ldr r0, address_of_start_of_stack
+    ldr r0, [r0]
 
+    sub r0, r0, r2
 
-
+    ldr lr, address_of_return3
+    ldr lr, [lr]
+    bx lr
 
 .global main
 
@@ -84,6 +109,9 @@ main:
 	ldr r0, address_of_scan_pattern
 	ldr r1, address_of_size
 	bl scanf
+
+    ldr r0, address_of_start_of_stack
+    str sp, [r0]
 
     b check_array_loop
 
@@ -116,14 +144,26 @@ check_array_loop:
 	ldr r1, [r1]
 
 	cmp r1, r0
-	bls array_loop
+	bne array_loop
 
+print_result:
+    /*reset i ＝ i － 1*/
+    ldr r1, address_of_i
+    ldr r0, [r1]
+    add r0, r0, #-1
+    str r0, [r1]
+
+    bl sum
+
+    ldr r1, address_of_total
+    ldr r1, [r1]
+    ldr r0, address_of_message3
+    bl printf
 
 end:
 	ldr r0, address_of_return
 	ldr lr, [r0]
 	bx lr
-
 
 
 address_of_tmp: .word tmp
@@ -137,9 +177,8 @@ address_of_i: .word i
 address_of_size: .word size
 address_of_return_of_test: .word return_of_test
 address_of_return: .word return
-address_of_return1: .word return1
-address_of_return2: .word return2
 address_of_return3: .word return3
+address_of_start_of_stack: .word start_of_stack
 .global printf
 .global scanf
 
