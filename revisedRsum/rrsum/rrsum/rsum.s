@@ -62,45 +62,35 @@ get_address_of_a_n:
     ldr lr, [lr]
     bx lr
 
-log:
-	ldr r1, address_of_return_of_test
-        str lr, [r1]
-	
-	ldr r0, address_of_test_log
-	bl printf
-	
-        ldr lr, address_of_return_of_test
-        ldr lr, [lr]
-        bx lr
 sum:
 	str lr, [sp, #-4]!
+
+	ldr r1, address_of_tmp
+	str r0, [r1]
+	bl get_address_of_a_n
+	ldr r0, [r0]
+	str r0, [sp, #-4]!
+	ldr r0, address_of_tmp
+	ldr r0, [r0]	
+
 	cmp r0, #0
 	bgt is_nonzero
+	
 	bl get_address_of_a_n
-	mov r2, r0
-	ldr r2, [r2]
-	add r3, r3, r2	
+	ldr r0, [r0]
 	b end
 
 is_nonzero:
-    ldr r1, address_of_tmp
-    str r0, [r1]
+	sub r0, r0, #1
+	bl sum	
 
-    bl get_address_of_a_n
-    mov r2, r0
-    ldr r2, [r2]
 
-    add r3, r3, r2
-
-    ldr r0, address_of_tmp
-    ldr r0, [r0]
-    sub r0, r0, #1
-    bl sum
+	ldr r1, [sp, #+4]!
+	add r0, r0, r1
 end:
-	add sp, sp, #+4 
+	add sp, sp, #+4	
 	ldr lr, [sp]
 	bx lr
-
 
 
 
@@ -163,12 +153,10 @@ print_result:
     add r0, r0, #-1
     str r0, [r1]
     
-    /*use r3 to store return value*/
-    mov r3, #0
     bl sum
-
+    mov r1, r0	
     ldr r0, address_of_message3
-    mov r1, r3
+    
     bl printf
 
 end_of_main:
